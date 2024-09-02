@@ -1,58 +1,30 @@
-# Data Cleaning with SQL
+# Cleaning-Data-in-World-Layoffs-Dataset
+This is a SQL Data Cleaning Project done in MySQL.
+There's no need for an extra readme file for this as I already have added the comments to improve readabilty. So, let's just discuss each steps one by one and have a quick revision.
 
-## Overview
+The first thing I have done is, I viewed the whole table as we generally do to view a table in SQL:
 
-This repository contains a SQL script designed to clean and preprocess a dataset containing information about company layoffs. The script demonstrates various data cleaning techniques such as removing duplicates, standardizing data, handling null values, and formatting dates.
+    SELECT * FROM layoffs;
 
-## Table of Contents
+As I'm going to perform Data Cleaning in the dataset, I'll definitely need some changes, including removing, modifying and renaming values; so it'd be better to copy the table to a new one and then perform the necessary changes there. That's what I have done next. Our main dataset name is "world_layoffs" so let's name the new table as "layoffs_staging".
 
-- [Overview](#overview)
-- [Dataset](#dataset)
-- [Prerequisites](#prerequisites)
-- [Script Details](#script-details)
-- [Usage](#usage)
+Next I have inserted all the data from the main table to the new one and just for clarification, view the complete table once before proceeding. Alright! From this we began our Data Cleaning Process. The very first thing I have done is to check whether it contains duplicates or not. Here I have used "ROW_NUMBER()" function, becasue it'll show us if any it contains duplicate values. From the row number, we can then easily identify the duplicates and delete them.
 
-## Dataset
+But the issue here is that we can't directly delete the values in a CTE (Common Table Expression), else it'll throw an error "The target table duplicate_cte of the DELETE is not updatable". So, in order to delete them without getting any error, next I have create a whole new table and copied all the data into it so that we can easily delete them.
+This time, you'll probably not get any error messege, if you have written the correct query.
 
-The script is designed to work with a dataset of company layoffs, which includes information such as the company name, location, industry, total laid off, percentage laid off, date, stage, country, and funds raised. The dataset must be imported into a MySQL database table called `layoffs_raw`.
+Alright our first step of our Data Cleaning Process, i.e. to remove duplicates is done. Next is to standadide the data. So, first I have used "TRIM()" function. This function basically removes the whitespaces. Then I have used the "LIKE" operator. This helps in pattern matching. So, if we have same values with different names, we can rename it and match them. For example, there is values "Crypto" and "CryptoCurrency". Here, I can rename all the values that starts with "Crypto" to "Crypto". This is because these two should be same but, our database system will not auto-detect it. 
 
-## Prerequisites
+One more thing I have done here is that we have a column named "date" which is in the text format and we need to change it to date format. So, for that I first used the function "STR_TO_DATE(`date`, '%m/%d/%Y')" for the correct sql date format and then modified its format to date using "ALTER" command.
 
-Before running the script, ensure you have the following:
+Out thirt step is to check the Null values or Blank Values. Here, I have simply used the "IS NULL" contraint to check if it's null. For blank values, just check normally as we check a blank value with a blank space. For example,
 
-- **MySQL**: The script is written for MySQL, so you need a MySQL server set up on your machine or a remote server.
-- **Database Setup**: A database with the `layoffs_raw` table containing your data.
+    SELECT * FROM layoffs_staging2
+    WHERE industry = '';
 
-### Sample Table Structure
+Finally, our last step is removing any columns or rows if it's of no use. To delete any row, use "DELETE" command and for columns, use "ALTER" command with "DROP" column. And guess what, our Data Cleaning process is done. Now view the cleaned data once again before proceeding, it can be either EDA or making any reports or improting somewhere else to visualize. 
 
-Here's a basic structure of the `layoffs_raw` table:
-
-```sql
-CREATE TABLE `layoffs_raw` (
-  `company` text,
-  `location` text,
-  `industry` text,
-  `total_laid_off` int DEFAULT NULL,
-  `percentage_laid_off` text,
-  `date` text,
-  `stage` text,
-  `country` text,
-  `funds_raised_millions` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-```
-
-## Script Details
-
-The script performs the following data cleaning steps:
-
-1. **Create Staging Table**: Creates a copy of the `layoffs_raw` table called `layoffs_staging` for processing.
-2. **Remove Duplicates**: Identifies and removes duplicate rows based on specific columns.
-3. **Standardize Data**: Trims whitespace, standardizes industry names, and formats date fields.
-4. **Handle Null and Blank Values**: Replaces blank industry values with NULL and fills missing industry values based on company name.
-5. **Remove Unnecessary Data**: Deletes rows with both `total_laid_off` and `percentage_laid_off` set to NULL and drops temporary columns.
-6. **Final Output**: Provides the cleaned dataset.
-
-## Usage
+Happy Exploring!
 
 1. **Import Data**: Import your CSV file into the `layoffs_raw` table in your MySQL database.
 2. **Run the Script**: Execute the SQL script against your database to clean the data.
